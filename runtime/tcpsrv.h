@@ -127,7 +127,7 @@ BEGINinterface(tcpsrv) /* name must also be changed in ENDinterface macro! */
 	rsRetVal (*ConstructFinalize)(tcpsrv_t __attribute__((unused)) *pThis);
 	rsRetVal (*Destruct)(tcpsrv_t **ppThis);
 	rsRetVal (*configureTCPListen)(tcpsrv_t*, uchar *pszPort, int bSuppOctetFram, uchar *pszAddr);
-	rsRetVal (*create_tcp_socket)(tcpsrv_t *pThis);
+	rsRetVal (*create_tcp_socket)(tcpsrv_t *pThis, int *bindfails);
 	rsRetVal (*Run)(tcpsrv_t *pThis);
 	/* set methods */
 	rsRetVal (*SetAddtlFrameDelim)(tcpsrv_t*, int);

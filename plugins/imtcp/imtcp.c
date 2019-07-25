@@ -221,7 +221,7 @@ static rsRetVal
 doOpenLstnSocks(tcpsrv_t *pSrv)
 {
 	ISOBJ_TYPE_assert(pSrv, tcpsrv);
-	return tcpsrv.create_tcp_socket(pSrv);
+	return tcpsrv.create_tcp_socket(pSrv, NULL);
 }
 
 

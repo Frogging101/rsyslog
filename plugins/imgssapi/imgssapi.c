@@ -276,7 +276,7 @@ doOpenLstnSocks(tcpsrv_t *pSrv)
 		}
 		if(pGSrv->allowedMethods) {
 			/* fallback to plain TCP */
-			CHKiRet(tcpsrv.create_tcp_socket(pSrv));
+			CHKiRet(tcpsrv.create_tcp_socket(pSrv, NULL));
 		} else {
 			ABORT_FINALIZE(RS_RET_GSS_ERR);
 		}

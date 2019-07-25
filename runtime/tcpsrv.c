@@ -391,13 +391,16 @@ finalize_it:
 
 /* Initialize TCP sockets (for listener) and listens on them */
 static rsRetVal
-create_tcp_socket(tcpsrv_t *pThis)
+create_tcp_socket(tcpsrv_t *pThis, int *bindfails)
 {
 	DEFiRet;
 	rsRetVal localRet;
 	tcpLstnPortList_t *pEntry;
 
 	ISOBJ_TYPE_assert(pThis, tcpsrv);
+
+	if (bindfails != NULL)
+		*bindfails = 0;
 
 	/* init all configured ports */
 	pEntry = pThis->pLstnPorts;
@@ -407,6 +410,8 @@ create_tcp_socket(tcpsrv_t *pThis)
 			LogError(0, localRet, "Could not create tcp listener, ignoring port "
 			"%s bind-address %s.", pEntry->pszPort,
 			(pEntry->pszAddr == NULL) ? "(null)" : (const char*)pEntry->pszAddr);
+			if(bindfails != NULL)
+				++(*bindfails);
 		}
 		pEntry = pEntry->pNext;
 	}
