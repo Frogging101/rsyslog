@@ -149,6 +149,7 @@ struct modConfData_s {
 	struct cnfarray *permittedPeers;
 	sbool configSetViaV2Method;
 	sbool bPreserveCase; /* preserve case of fromhost; true by default */
+	sbool bRequireBind;
 };
 
 static modConfData_t *loadModConf = NULL;/* modConf ptr to use for the current load process */
@@ -176,7 +177,8 @@ static struct cnfparamdescr modpdescr[] = {
 	{ "keepalive.time", eCmdHdlrPositiveInt, 0 },
 	{ "keepalive.interval", eCmdHdlrPositiveInt, 0 },
 	{ "gnutlsprioritystring", eCmdHdlrString, 0 },
-	{ "preservecase", eCmdHdlrBinary, 0 }
+	{ "preservecase", eCmdHdlrBinary, 0 },
+	{ "requirebind", eCmdHdlrBinary, 0 },
 };
 static struct cnfparamblk modpblk =
 	{ CNFPARAMBLK_VERSION,
@@ -220,8 +222,13 @@ isPermittedHost(struct sockaddr *addr, char *fromHostFQDN, void __attribute__((u
 static rsRetVal
 doOpenLstnSocks(tcpsrv_t *pSrv)
 {
+	int bindfails = 0;
+	DEFiRet;
 	ISOBJ_TYPE_assert(pSrv, tcpsrv);
-	return tcpsrv.create_tcp_socket(pSrv, NULL);
+	iRet = tcpsrv.create_tcp_socket(pSrv, &bindfails);
+	if(bindfails > 0 && runModConf->bRequireBind)
+		abort();
+	RETiRet;
 }
 
 
@@ -496,6 +503,7 @@ CODESTARTbeginCnfLoad
 	loadModConf->permittedPeers = NULL;
 	loadModConf->configSetViaV2Method = 0;
 	loadModConf->bPreserveCase = 1; /* default to true */
+	loadModConf->bRequireBind = 0;
 	bLegacyCnfModGlobalsPermitted = 1;
 	/* init legacy config variables */
 	cs.pszStrmDrvrAuthMode = NULL;
@@ -570,6 +578,8 @@ CODESTARTsetModCnf
 			loadModConf->permittedPeers = cnfarrayDup(pvals[i].val.d.ar);
 		} else if(!strcmp(modpblk.descr[i].name, "preservecase")) {
 			loadModConf->bPreserveCase = (int) pvals[i].val.d.n;
+		} else if(!strcmp(modpblk.descr[i].name, "requirebind")) {
+			loadModConf->bRequireBind = (int) pvals[i].val.d.n;
 		} else {
 			dbgprintf("imtcp: program error, non-handled "
 			  "param '%s' in beginCnfLoad\n", modpblk.descr[i].name);
